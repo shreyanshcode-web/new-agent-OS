@@ -1,0 +1,139 @@
+syntax = "proto3";
+
+package workos.api;
+
+option go_package = "github.com/workos/workos-ai/api/proto";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+
+// Task represents a unit of work
+message Task {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  string assigned_agent = 4;
+  string status = 5; // pending, in_progress, completed, failed
+  google.protobuf.Struct metadata = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+  int32 priority = 9; // 1-10, 10 is highest
+}
+
+// Goal represents a high-level business objective
+message Goal {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  string deadline = 4;
+  repeated string subtask_ids = 5;
+  string status = 6; // planning, in_progress, completed, failed
+  google.protobuf.Timestamp created_at = 7;
+}
+
+// Agent capabilities
+message AgentCapabilities {
+  string agent_name = 1;
+  repeated string skills = 2;
+  string description = 3;
+  int32 max_concurrent_tasks = 4;
+}
+
+// Request messages
+
+message GoalRequest {
+  string goal_description = 1;
+  int32 priority = 2;
+  string deadline = 3;
+  google.protobuf.Struct context = 4;
+}
+
+message PlanResponse {
+  Goal goal = 1;
+  repeated Task tasks = 2;
+  string execution_plan = 3;
+}
+
+message TaskRequest {
+  string title = 1;
+  string description = 2;
+  string agent_type = 3; // hr, sales, dev, marketing
+  int32 priority = 4;
+  google.protobuf.Struct parameters = 5;
+}
+
+message TaskResponse {
+  Task task = 1;
+  string status = 2;
+  string message = 3;
+}
+
+message TaskStatusRequest {
+  string task_id = 1;
+}
+
+message TaskStatusResponse {
+  Task task = 1;
+  string status = 2;
+  string result = 3;
+  google.protobuf.Struct output = 4;
+}
+
+message StatusRequest {
+  string plan_id = 1;
+}
+
+message StatusResponse {
+  Goal goal = 1;
+  repeated Task tasks = 2;
+  int32 completed_tasks = 3;
+  int32 failed_tasks = 4;
+  string overall_status = 5;
+}
+
+message CancelRequest {
+  string plan_id = 1;
+}
+
+message Empty {}
+
+message TaskList {
+  repeated Task tasks = 1;
+}
+
+message CapabilitiesResponse {
+  AgentCapabilities capabilities = 1;
+}
+
+// Executive Agent Service
+service ExecutiveAgent {
+  // Convert high-level goal to actionable plan
+  rpc PlanGoal(GoalRequest) returns (PlanResponse);
+  
+  // Get current status of a plan
+  rpc GetStatus(StatusRequest) returns (StatusResponse);
+  
+  // Cancel a plan
+  rpc CancelPlan(CancelRequest) returns (Empty);
+}
+
+// Orchestrator Service
+service Orchestrator {
+  // Submit a task to the orchestrator
+  rpc SubmitTask(TaskRequest) returns (TaskResponse);
+  
+  // Get status of a specific task
+  rpc GetTaskStatus(TaskStatusRequest) returns (TaskStatusResponse);
+  
+  // List all active tasks
+  rpc ListActiveTasks(Empty) returns (TaskList);
+}
+
+// Base Agent Service (implemented by all specialized agents)
+service Agent {
+  // Execute a task
+  rpc ExecuteTask(TaskRequest) returns (TaskResponse);
+  
+  // Get agent capabilities
+  rpc GetCapabilities(Empty) returns (CapabilitiesResponse);
+}
