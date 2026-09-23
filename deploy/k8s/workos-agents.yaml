@@ -1,0 +1,243 @@
+---
+# HR Agent Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: hr-agent
+  namespace: workos-ai
+spec:
+  type: ClusterIP
+  ports:
+  - port: 50053
+    targetPort: 50053
+    name: grpc
+  selector:
+    app: hr-agent
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hr-agent
+  namespace: workos-ai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hr-agent
+  template:
+    metadata:
+      labels:
+        app: hr-agent
+    spec:
+      containers:
+      - name: hr-agent
+        image: workos/hr-agent:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 50053
+          name: grpc
+        env:
+        - name: HR_AGENT_PORT
+          value: "50053"
+        - name: RABBITMQ_URL
+          value: amqp://guest:guest@rabbitmq:5672/
+        - name: ORCHESTRATOR_HOST
+          value: orchestrator
+        - name: ORCHESTRATOR_PORT
+          value: "50051"
+        envFrom:
+        - configMapRef:
+            name: workos-config
+        - secretRef:
+            name: workos-secrets
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+
+---
+# Sales Agent Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: sales-agent
+  namespace: workos-ai
+spec:
+  type: ClusterIP
+  ports:
+  - port: 50054
+    targetPort: 50054
+    name: grpc
+  selector:
+    app: sales-agent
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sales-agent
+  namespace: workos-ai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sales-agent
+  template:
+    metadata:
+      labels:
+        app: sales-agent
+    spec:
+      containers:
+      - name: sales-agent
+        image: workos/sales-agent:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 50054
+          name: grpc
+        env:
+        - name: SALES_AGENT_PORT
+          value: "50054"
+        - name: RABBITMQ_URL
+          value: amqp://guest:guest@rabbitmq:5672/
+        - name: ORCHESTRATOR_HOST
+          value: orchestrator
+        - name: ORCHESTRATOR_PORT
+          value: "50051"
+        envFrom:
+        - configMapRef:
+            name: workos-config
+        - secretRef:
+            name: workos-secrets
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+
+---
+# Dev Agent Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: dev-agent
+  namespace: workos-ai
+spec:
+  type: ClusterIP
+  ports:
+  - port: 50055
+    targetPort: 50055
+    name: grpc
+  selector:
+    app: dev-agent
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dev-agent
+  namespace: workos-ai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dev-agent
+  template:
+    metadata:
+      labels:
+        app: dev-agent
+    spec:
+      containers:
+      - name: dev-agent
+        image: workos/dev-agent:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 50055
+          name: grpc
+        env:
+        - name: DEV_AGENT_PORT
+          value: "50055"
+        - name: RABBITMQ_URL
+          value: amqp://guest:guest@rabbitmq:5672/
+        - name: ORCHESTRATOR_HOST
+          value: orchestrator
+        - name: ORCHESTRATOR_PORT
+          value: "50051"
+        envFrom:
+        - configMapRef:
+            name: workos-config
+        - secretRef:
+            name: workos-secrets
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+
+---
+# Marketing Agent Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: marketing-agent
+  namespace: workos-ai
+spec:
+  type: ClusterIP
+  ports:
+  - port: 50056
+    targetPort: 50056
+    name: grpc
+  selector:
+    app: marketing-agent
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: marketing-agent
+  namespace: workos-ai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: marketing-agent
+  template:
+    metadata:
+      labels:
+        app: marketing-agent
+    spec:
+      containers:
+      - name: marketing-agent
+        image: workos/marketing-agent:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 50056
+          name: grpc
+        env:
+        - name: MARKETING_AGENT_PORT
+          value: "50056"
+        - name: RABBITMQ_URL
+          value: amqp://guest:guest@rabbitmq:5672/
+        - name: ORCHESTRATOR_HOST
+          value: orchestrator
+        - name: ORCHESTRATOR_PORT
+          value: "50051"
+        envFrom:
+        - configMapRef:
+            name: workos-config
+        - secretRef:
+            name: workos-secrets
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"

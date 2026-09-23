@@ -1,0 +1,33 @@
+# Orchestrator Service Dockerfile
+FROM golang:1.21-alpine AS builder
+
+WORKDIR /app
+
+# Install build dependencies
+RUN apk add --no-cache git protobuf-dev protoc
+
+# Copy go mod files
+COPY go.mod go.sum ./
+
+# Download dependencies
+RUN go mod download
+
+# Copy source code
+COPY . .
+
+# Build the application
+RUN CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo -o orchestrator ./cmd/orchestrator
+
+# Runtime image
+FROM alpine:latest
+
+RUN apk --no-cache add ca-certificates
+
+WORKDIR /root/
+
+COPY --from=builder /app/orchestrator .
+COPY .env.example .env
+
+EXPOSE 50051
+
+CMD ["./orchestrator"]
